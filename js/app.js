@@ -1,51 +1,26 @@
-/* Mon Hub — écran d'accueil iPhone pour centraliser les projets */
+/* Mon Hub — écran d'accueil pour centraliser les projets (sans dossiers) */
 'use strict';
 
 const DATA_URL = 'data/apps.json';
-const LS_LAYOUT = 'hub-layout-v3';   // { folders, appFolder, order, dock, hidden }
+const LS_LAYOUT = 'hub-layout-v4';   // { order, dock, hidden }
 
 let state = {
-  apps: [],          // liste depuis apps.json (name, emoji, color, url, desc)
-  folders: {},       // folderId -> { name, emoji, color }
-  appFolder: {},     // appId -> folderId | null
-  order: [],         // items de la grille : appId | "folder:<folderId>"
-  dock: [],          // appIds
-  hidden: new Set(), // appIds masquées (supprimées)
+  apps: [],
+  order: [],          // ordre des apps sur la grille
+  dock: [],           // apps épinglées dans le dock
+  hidden: new Set(),  // apps masquées
   editing: false,
 };
 
-let currentFolderId = null;
-
 /* ===== Helpers ===== */
 function appById(id) { return state.apps.find(a => a.id === id); }
-function getAppFolder(id) { return state.appFolder[id] ?? null; }
-function folderApps(fid) {
-  return state.apps.filter(a => getAppFolder(a.id) === fid && !state.hidden.has(a.id));
-}
-function isFolderItem(item) { return item.startsWith('folder:'); }
-function folderIdOf(item) { return item.slice(7); }
 
 function loadJSON(key) {
   try { return JSON.parse(localStorage.getItem(key)); } catch { return null; }
 }
 function saveJSON(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
 function persist() {
-  saveJSON(LS_LAYOUT, {
-    folders: state.folders,
-    appFolder: state.appFolder,
-    order: state.order,
-    dock: state.dock,
-    hidden: [...state.hidden],
-  });
-}
-
-function nextFolderId() {
-  let max = 0;
-  for (const k of Object.keys(state.folders)) {
-    const m = k.match(/^f(\d+)$/);
-    if (m) max = Math.max(max, parseInt(m[1], 10));
-  }
-  return 'f' + (max + 1);
+  saveJSON(LS_LAYOUT, { order: state.order, dock: state.dock, hidden: [...state.hidden] });
 }
 
 /* ===== Chargement ===== */
@@ -61,65 +36,27 @@ async function loadData() {
 
   const saved = loadJSON(LS_LAYOUT);
   if (saved && Array.isArray(saved.order)) {
-    state.folders = saved.folders || {};
-    state.appFolder = saved.appFolder || {};
     state.order = saved.order;
     state.dock = Array.isArray(saved.dock) ? saved.dock : [];
     state.hidden = new Set(saved.hidden || []);
     mergeNewApps(data);
   } else {
-    initFromJson(data);
+    state.order = data.apps.map(a => a.id);
+    state.dock = data.apps.slice(0, 4).map(a => a.id);
+    state.hidden = new Set();
   }
 
+  persist();
   render();
 }
 
-function initFromJson(data) {
-  state.folders = {};
-  state.appFolder = {};
-  const defFolders = data.folders || {};
-
-  const byName = {};
-  for (const app of data.apps) {
-    if (app.folder) (byName[app.folder] = byName[app.folder] || []).push(app.id);
-    else state.appFolder[app.id] = null;
-  }
-
-  state.order = [];
-  for (const app of data.apps) if (!app.folder) state.order.push(app.id);
-
-  for (const [name, ids] of Object.entries(byName)) {
-    const def = defFolders[name] || {};
-    const fid = nextFolderId();
-    state.folders[fid] = { name, emoji: def.emoji || '📁', color: def.color || '#8e8e93' };
-    for (const id of ids) state.appFolder[id] = fid;
-    state.order.push('folder:' + fid);
-  }
-
-  state.dock = data.apps.filter(a => !a.folder).slice(0, 4).map(a => a.id);
-  state.hidden = new Set();
-  persist();
-}
-
 function mergeNewApps(data) {
-  const defFolders = data.folders || {};
   let changed = false;
   for (const app of data.apps) {
-    if (app.id in state.appFolder) continue;
-    if (app.folder) {
-      let fid = Object.keys(state.folders).find(k => state.folders[k].name === app.folder);
-      if (!fid) {
-        fid = nextFolderId();
-        const def = defFolders[app.folder] || {};
-        state.folders[fid] = { name: app.folder, emoji: def.emoji || '📁', color: def.color || '#8e8e93' };
-      }
-      state.appFolder[app.id] = fid;
-      if (!state.order.includes('folder:' + fid)) state.order.push('folder:' + fid);
-    } else {
-      state.appFolder[app.id] = null;
-      if (!state.order.includes(app.id)) state.order.push(app.id);
+    if (!state.order.includes(app.id)) {
+      state.order.push(app.id);
+      changed = true;
     }
-    changed = true;
   }
   if (changed) persist();
 }
@@ -133,24 +70,13 @@ function render() {
 function renderGrid() {
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
-  for (const item of state.order) {
-    const el = buildItem(item);
-    if (el) grid.appendChild(el);
+  for (const id of state.order) {
+    const app = appById(id);
+    if (!app || state.hidden.has(id)) continue;
+    const el = buildAppIcon(app, 'grid');
+    el.addEventListener('click', () => openApp(app));
+    grid.appendChild(el);
   }
-}
-
-function buildItem(item) {
-  if (isFolderItem(item)) {
-    const fid = folderIdOf(item);
-    if (!state.folders[fid]) return null;
-    if (folderApps(fid).length === 0) return null; // dossier vide → masqué
-    return buildFolderIcon(fid);
-  }
-  const app = appById(item);
-  if (!app || state.hidden.has(item)) return null;
-  const el = buildAppIcon(app, 'grid');
-  el.addEventListener('click', () => openApp(app));
-  return el;
 }
 
 function renderDock() {
@@ -185,44 +111,12 @@ function buildAppIcon(app, zone) {
   badge.textContent = '✕';
   badge.addEventListener('click', (e) => {
     e.stopPropagation();
-    confirmDelete(app.id, app.name);
+    confirmHide(app.id, app.name);
   });
 
   el.appendChild(icon);
   el.appendChild(label);
   el.appendChild(badge);
-  return el;
-}
-
-function buildFolderIcon(fid) {
-  const folder = state.folders[fid];
-  const apps = folderApps(fid);
-  const el = document.createElement('div');
-  el.className = 'app';
-  el.dataset.folder = fid;
-  el.dataset.zone = 'grid';
-
-  const icon = document.createElement('div');
-  icon.className = 'icon folder-icon';
-  for (let i = 0; i < 9; i++) {
-    const m = document.createElement('div');
-    m.className = 'mini';
-    if (apps[i]) {
-      m.style.background = gradientFor(apps[i].color);
-      m.textContent = apps[i].emoji || '';
-    } else {
-      m.classList.add('empty');
-    }
-    icon.appendChild(m);
-  }
-
-  const label = document.createElement('div');
-  label.className = 'label';
-  label.textContent = folder.name;
-
-  el.appendChild(icon);
-  el.appendChild(label);
-  el.addEventListener('click', () => openFolder(fid));
   return el;
 }
 
@@ -239,24 +133,24 @@ function shade(hex, pct) {
   return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
 }
 
-/* ===== Suppression (masquer) ===== */
-let pendingDelete = null;
+/* ===== Masquer (façon iOS) ===== */
+let pendingHide = null;
 
-function confirmDelete(id, name) {
-  pendingDelete = id;
+function confirmHide(id, name) {
+  pendingHide = id;
   document.getElementById('confirm-name').textContent = name;
   document.getElementById('confirm-overlay').classList.remove('hidden');
 }
 
-function applyDelete() {
-  if (!pendingDelete) return;
-  setAppHidden(pendingDelete, true);
+function applyHide() {
+  if (!pendingHide) return;
+  setAppHidden(pendingHide, true);
   closeConfirm();
   toast('Masquée ✓ (ré-affichable dans ⚙️ Réglages)');
 }
 
 function closeConfirm() {
-  pendingDelete = null;
+  pendingHide = null;
   document.getElementById('confirm-overlay').classList.add('hidden');
 }
 
@@ -267,8 +161,7 @@ function setAppHidden(id, hide) {
     state.dock = state.dock.filter(i => i !== id);
   } else {
     state.hidden.delete(id);
-    // ré-affiche : dans un dossier ? rien (elle réapparaît dedans), sinon fin de grille
-    if (!getAppFolder(id) && !state.order.includes(id)) state.order.push(id);
+    if (!state.order.includes(id)) state.order.push(id);
   }
   persist();
   render();
@@ -282,99 +175,14 @@ function openApp(app) {
   setTimeout(() => window.open(app.url, '_blank', 'noopener'), 220);
 }
 
-/* ===== Dossiers ===== */
-function openFolder(fid) {
-  currentFolderId = fid;
-  const folder = state.folders[fid];
-  const apps = folderApps(fid);
-
-  const titleEl = document.getElementById('folder-title');
-  titleEl.textContent = folder.name;
-  titleEl.classList.remove('renaming');
-
-  const fg = document.getElementById('folder-grid');
-  fg.innerHTML = '';
-  for (const app of apps) {
-    const el = buildAppIcon(app, 'folder');
-    el.addEventListener('click', () => openApp(app));
-    fg.appendChild(el);
-  }
-  document.getElementById('folder-overlay').classList.remove('hidden');
-  attachDrag();
-}
-
-function closeFolder() {
-  currentFolderId = null;
-  document.getElementById('folder-overlay').classList.add('hidden');
-}
-
-function startRename(fid) {
-  const titleEl = document.getElementById('folder-title');
-  if (!titleEl || titleEl.classList.contains('renaming')) return;
-  titleEl.classList.add('renaming');
-  titleEl.textContent = '';
-
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.className = 'folder-title-input';
-  input.maxLength = 30;
-  input.value = state.folders[fid].name;
-  titleEl.appendChild(input);
-  input.focus();
-  input.select();
-
-  let committed = false;
-  const commit = () => {
-    if (committed) return;
-    committed = true;
-    const name = input.value.trim();
-    if (name) state.folders[fid].name = name;
-    persist();
-    openFolder(fid); // reconstruit le titre + contenu
-  };
-  input.addEventListener('blur', commit);
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') input.blur();
-    else if (e.key === 'Escape') { input.value = state.folders[fid].name; input.blur(); }
-  });
-}
-
 /* ===== Réglages ===== */
 function openSettings() {
   const list = document.getElementById('settings-list');
   list.innerHTML = '';
-
-  // Groupe par dossier pour la lisibilité
-  const groups = [];
-  const ungrouped = [];
   for (const app of state.apps) {
-    const fid = getAppFolder(app.id);
-    if (fid) {
-      let g = groups.find(x => x.fid === fid);
-      if (!g) { g = { fid, name: state.folders[fid]?.name || 'Dossier', apps: [] }; groups.push(g); }
-      g.apps.push(app);
-    } else {
-      ungrouped.push(app);
-    }
+    list.appendChild(buildSettingsRow(app));
   }
-
-  for (const g of groups) {
-    list.appendChild(buildSettingsHeader(g.name));
-    for (const app of g.apps) list.appendChild(buildSettingsRow(app));
-  }
-  if (ungrouped.length) {
-    list.appendChild(buildSettingsHeader('Autres'));
-    for (const app of ungrouped) list.appendChild(buildSettingsRow(app));
-  }
-
   document.getElementById('settings-overlay').classList.remove('hidden');
-}
-
-function buildSettingsHeader(name) {
-  const h = document.createElement('div');
-  h.className = 'settings-group';
-  h.textContent = name;
-  return h;
 }
 
 function buildSettingsRow(app) {
@@ -396,11 +204,7 @@ function buildSettingsRow(app) {
   const cb = document.createElement('input');
   cb.type = 'checkbox';
   cb.checked = !state.hidden.has(app.id);
-  cb.addEventListener('change', () => {
-    setAppHidden(app.id, !cb.checked);
-    // rafraîchir l'ordre des dossiers dans la liste sans fermer
-    openSettings();
-  });
+  cb.addEventListener('change', () => setAppHidden(app.id, !cb.checked));
   const slider = document.createElement('span');
   slider.className = 'slider';
   label.appendChild(cb);
@@ -425,11 +229,10 @@ function toggleEdit() {
   if (state.editing) attachDrag();
 }
 
-/* --- Drag & drop tactile --- */
 let drag = null;
 
 function attachDrag() {
-  document.querySelectorAll('#grid .app, #dock .app, #folder-grid .app').forEach(el => {
+  document.querySelectorAll('#grid .app, #dock .app').forEach(el => {
     if (el.dataset.dragAttached) return;
     el.dataset.dragAttached = '1';
     el.addEventListener('pointerdown', onPointerDown);
@@ -442,7 +245,7 @@ function onPointerDown(e) {
   const el = e.currentTarget;
   drag = {
     el,
-    key: el.dataset.appId || ('folder:' + el.dataset.folder),
+    key: el.dataset.appId,
     zone: el.dataset.zone || 'grid',
     startX: e.clientX,
     startY: e.clientY,
@@ -509,17 +312,13 @@ function onPointerUp(e) {
   if (wasMoved) {
     suppressNextClick();
     const target = resolveDrop(x, y);
-    if (target) {
-      applyDrop(target);
-      if (target.escapeFolder) closeFolder();
-    }
+    if (target) applyDrop(target);
     cleanupDrag();
     persist();
     render();
     attachDrag();
   } else {
-    // simple tap → laisser le click natif ouvrir l'app/dossier
-    cleanupDrag();
+    cleanupDrag(); // simple tap → click natif ouvre l'app
   }
 }
 
@@ -546,15 +345,6 @@ function suppressNextClick() {
 }
 
 function resolveDrop(x, y) {
-  // Si l'overlay dossier est ouvert → gérer la sortie d'une app du dossier
-  const overlay = document.getElementById('folder-overlay');
-  if (!overlay.classList.contains('hidden')) {
-    const card = document.getElementById('folder-card').getBoundingClientRect();
-    const inside = x >= card.left && x <= card.right && y >= card.top && y <= card.bottom;
-    if (inside) return null; // repositionnement intra-dossier non supporté
-    return { zone: 'grid', key: null, after: true, escapeFolder: true };
-  }
-
   const el = elementAt(x, y);
   if (!el) return null;
 
@@ -565,9 +355,6 @@ function resolveDrop(x, y) {
 
   const gridApp = el.closest('#grid .app');
   if (gridApp) {
-    if (gridApp.dataset.folder) {
-      return { zone: 'grid', folderTarget: gridApp.dataset.folder };
-    }
     const key = gridApp.dataset.appId;
     const rect = gridApp.getBoundingClientRect();
     const after = y > rect.top + rect.height / 2;
@@ -582,34 +369,9 @@ function resolveDrop(x, y) {
 function applyDrop(target) {
   if (!target || !drag) return;
   const key = drag.key;
-  const isFolder = isFolderItem(key);
 
-  if (isFolder) {
-    // Déplacer un dossier → réordonner dans la grille
-    state.order = state.order.filter(i => i !== key);
-    const refKey = target.folderTarget ? ('folder:' + target.folderTarget) : target.key;
-    if (refKey) {
-      const idx = state.order.indexOf(refKey);
-      if (idx !== -1) state.order.splice(target.after ? idx + 1 : idx, 0, key);
-      else state.order.push(key);
-    } else {
-      state.order.push(key);
-    }
-    return;
-  }
-
-  // C'est une app
   state.order = state.order.filter(i => i !== key);
   state.dock = state.dock.filter(i => i !== key);
-
-  // Entrer dans un dossier ?
-  if (target.folderTarget) {
-    state.appFolder[key] = target.folderTarget;
-    return;
-  }
-
-  // Sortir du dossier (si elle y était) ou repositionner
-  state.appFolder[key] = null;
 
   if (target.zone === 'dock') {
     if (target.beforeKey && target.beforeKey !== key) {
@@ -619,15 +381,15 @@ function applyDrop(target) {
     } else {
       state.dock.push(key);
     }
+    return;
+  }
+
+  if (target.key) {
+    const idx = state.order.indexOf(target.key);
+    if (idx !== -1) state.order.splice(target.after ? idx + 1 : idx, 0, key);
+    else state.order.push(key);
   } else {
-    // grille
-    if (target.key) {
-      const idx = state.order.indexOf(target.key);
-      if (idx !== -1) state.order.splice(target.after ? idx + 1 : idx, 0, key);
-      else state.order.push(key);
-    } else {
-      state.order.push(key);
-    }
+    state.order.push(key);
   }
 }
 
@@ -664,16 +426,6 @@ function registerSW() {
 
 /* ===== Init ===== */
 document.addEventListener('DOMContentLoaded', () => {
-  const folderOverlay = document.getElementById('folder-overlay');
-  folderOverlay.addEventListener('click', (e) => {
-    if (e.target === folderOverlay) closeFolder();
-  });
-
-  document.getElementById('folder-title').addEventListener('click', (e) => {
-    if (e.target.tagName === 'INPUT') return;
-    if (currentFolderId) startRename(currentFolderId);
-  });
-
   document.getElementById('edit-btn').addEventListener('click', toggleEdit);
   document.getElementById('settings-btn').addEventListener('click', openSettings);
   document.getElementById('settings-close').addEventListener('click', closeSettings);
@@ -684,7 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('confirm-cancel').addEventListener('click', closeConfirm);
-  document.getElementById('confirm-ok').addEventListener('click', applyDelete);
+  document.getElementById('confirm-ok').addEventListener('click', applyHide);
 
   tickClock();
   setInterval(tickClock, 30000);

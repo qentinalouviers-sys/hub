@@ -35,8 +35,7 @@
       "emoji": "☀️",
       "color": "#ff9f0a",
       "url": "https://app.eviatek.fr",
-      "desc": "Simulateur solaire SaaS",
-      "folder": "SaaS"
+      "desc": "Simulateur solaire SaaS"
     },
     {
       "id": "qia",
@@ -44,8 +43,7 @@
       "emoji": "⚖️",
       "color": "#30d158",
       "url": "http://qia.eviatek.fr",
-      "desc": "Questions juridiques assistées CEE",
-      "folder": "SaaS"
+      "desc": "Questions juridiques assistées CEE"
     },
     {
       "id": "hermes-hq",
@@ -53,8 +51,7 @@
       "emoji": "🤖",
       "color": "#5e5ce6",
       "url": "https://hermes.eviatek.fr",
-      "desc": "Dashboard flotte d'agents",
-      "folder": "SaaS"
+      "desc": "Dashboard flotte d'agents"
     },
     {
       "id": "resto-ia",
@@ -62,8 +59,7 @@
       "emoji": "🍕",
       "color": "#ff375f",
       "url": "http://145.239.73.53",
-      "desc": "Web UI resto (Hermes)",
-      "folder": "Vitrines"
+      "desc": "Web UI resto (Hermes)"
     },
     {
       "id": "qentina-pizzeria",
@@ -71,8 +67,7 @@
       "emoji": "🍕",
       "color": "#e63946",
       "url": "https://qentina.fr",
-      "desc": "Pizzeria à Louviers",
-      "folder": "Vitrines"
+      "desc": "Pizzeria à Louviers"
     },
     {
       "id": "grims-legacy",
@@ -80,8 +75,7 @@
       "emoji": "🌊",
       "color": "#64d2ff",
       "url": "https://qentinalouviers-sys.github.io/Grim-s/",
-      "desc": "Version legacy du dashboard mer",
-      "folder": "Vitrines"
+      "desc": "Version legacy du dashboard mer"
     },
     {
       "id": "stacktheboite",
@@ -89,8 +83,7 @@
       "emoji": "📦",
       "color": "#a2845e",
       "url": "https://qentinalouviers-sys.github.io/stacktheboite/",
-      "desc": "Stack de démarrage",
-      "folder": "Vitrines"
+      "desc": "Stack de démarrage"
     },
     {
       "id": "testevreuxreno",
@@ -98,8 +91,7 @@
       "emoji": "🏠",
       "color": "#00c7be",
       "url": "https://qentinalouviers-sys.github.io/Testevreuxreno/",
-      "desc": "Test site rénovation",
-      "folder": "Vitrines"
+      "desc": "Test site rénovation"
     },
     {
       "id": "cryptolive",
@@ -107,8 +99,7 @@
       "emoji": "🪙",
       "color": "#f7b731",
       "url": "https://github.com/qentinalouviers-sys/Cryptolive",
-      "desc": "Repo crypto (dev)",
-      "folder": "Dev"
+      "desc": "Repo crypto (dev)"
     },
     {
       "id": "clip-cut",
@@ -116,8 +107,7 @@
       "emoji": "✂️",
       "color": "#ff6482",
       "url": "https://github.com/qentinalouviers-sys/Clip-cut",
-      "desc": "Repo découpage clips",
-      "folder": "Dev"
+      "desc": "Repo découpage clips"
     },
     {
       "id": "sas-qentina",
@@ -125,8 +115,7 @@
       "emoji": "🏢",
       "color": "#48484a",
       "url": "https://github.com/qentinalouviers-sys/sas-qentina",
-      "desc": "Repo structure SAS",
-      "folder": "Dev"
+      "desc": "Repo structure SAS"
     },
     {
       "id": "atred-saas",
@@ -134,8 +123,7 @@
       "emoji": "🔐",
       "color": "#af52de",
       "url": "https://github.com/qentinalouviers-sys/SAAS-ATRED",
-      "desc": "Gestion clients (privé)",
-      "folder": "Dev"
+      "desc": "Gestion clients (privé)"
     },
     {
       "id": "atred-vitrine",
@@ -143,8 +131,7 @@
       "emoji": "🖌️",
       "color": "#ff9500",
       "url": "https://github.com/qentinalouviers-sys/VITRINE-ATRED",
-      "desc": "Ravalement façade (privé)",
-      "folder": "Dev"
+      "desc": "Ravalement façade (privé)"
     },
     {
       "id": "deepseek-harn",
@@ -152,13 +139,7 @@
       "emoji": "🧠",
       "color": "#32ade6",
       "url": "https://github.com/qentinalouviers-sys/deepseek-harnYO",
-      "desc": "Fork harness plugins",
-      "folder": "Dev"
+      "desc": "Fork harness plugins"
     }
-  ],
-  "folders": {
-    "SaaS": { "emoji": "🚀", "color": "#5856d6" },
-    "Vitrines": { "emoji": "🖥️", "color": "#ff9f0a" },
-    "Dev": { "emoji": "💻", "color": "#34c759" }
-  }
+  ]
 }
