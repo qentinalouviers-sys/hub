@@ -46,19 +46,31 @@
   <!-- Bouton édition -->
   <button id="edit-btn" class="edit-btn" aria-label="Réorganiser">✏️</button>
 
-  <!-- Bouton réinitialiser -->
-  <button id="reset-btn" class="reset-btn hidden" aria-label="Réinitialiser">↺</button>
+  <!-- Bouton réglages -->
+  <button id="settings-btn" class="settings-btn" aria-label="Réglages">⚙️</button>
 
   <!-- Modale de confirmation suppression -->
   <div id="confirm-overlay" class="confirm-overlay hidden">
     <div class="confirm-card">
-      <div class="confirm-emoji">🗑️</div>
-      <div class="confirm-title">Supprimer «&nbsp;<span id="confirm-name"></span>&nbsp;»&nbsp;?</div>
-      <div class="confirm-sub">Cette application sera retirée de ton écran d'accueil.</div>
+      <div class="confirm-emoji">👁️</div>
+      <div class="confirm-title">Masquer «&nbsp;<span id="confirm-name"></span>&nbsp;»&nbsp;?</div>
+      <div class="confirm-sub">Elle sera retirée de l'écran. Tu pourras la ré-afficher dans ⚙️ Réglages.</div>
       <div class="confirm-actions">
         <button id="confirm-cancel" class="confirm-btn cancel">Annuler</button>
-        <button id="confirm-ok" class="confirm-btn danger">Supprimer</button>
+        <button id="confirm-ok" class="confirm-btn danger">Masquer</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Panneau réglages -->
+  <div id="settings-overlay" class="settings-overlay hidden">
+    <div class="settings-card">
+      <div class="settings-header">
+        <span>⚙️ Réglages</span>
+        <button id="settings-close" aria-label="Fermer">✕</button>
+      </div>
+      <div class="settings-sub">Affiche ou masque les apps du hub</div>
+      <div id="settings-list"></div>
     </div>
   </div>
 

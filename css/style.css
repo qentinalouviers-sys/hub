@@ -374,8 +374,8 @@ body.editing .app .badge { display: flex; }
 .confirm-btn.cancel { background: rgba(120,120,128,0.35); color: #fff; }
 .confirm-btn.danger { background: #ff3b30; color: #fff; }
 
-/* ===== Bouton reset ===== */
-.reset-btn {
+/* ===== Bouton réglages ===== */
+.settings-btn {
   position: fixed;
   left: 16px;
   bottom: calc(var(--dock-h) + 22px + env(safe-area-inset-bottom));
@@ -391,5 +391,128 @@ body.editing .app .badge { display: flex; }
   box-shadow: 0 4px 14px rgba(0,0,0,0.4);
   transition: background 0.2s ease;
 }
-.reset-btn.hidden { display: none; }
-.reset-btn:active { background: rgba(255,149,0,0.7); }
+.settings-btn:active { background: rgba(255,149,0,0.7); }
+
+/* ===== Panneau réglages ===== */
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+.settings-overlay.hidden { opacity: 0; pointer-events: none; }
+.settings-card {
+  width: min(360px, 90vw);
+  max-height: 72vh;
+  background: rgba(44,44,48,0.97);
+  border-radius: 18px;
+  padding: 18px 16px;
+  border: 1px solid rgba(255,255,255,0.16);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+  display: flex;
+  flex-direction: column;
+  transform: scale(1);
+  transition: transform 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+.settings-overlay.hidden .settings-card { transform: scale(0.85); }
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.settings-header span { font-size: 17px; font-weight: 700; }
+.settings-header button {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.6);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+}
+.settings-sub {
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 10px;
+}
+#settings-list {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.settings-group {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255,255,255,0.4);
+  padding: 10px 4px 4px;
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.settings-info { display: flex; align-items: center; gap: 10px; font-size: 15px; }
+.settings-emoji { font-size: 20px; }
+
+/* interrupteur iOS */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 51px;
+  height: 31px;
+  flex-shrink: 0;
+}
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch .slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: rgba(120,120,128,0.32);
+  border-radius: 31px;
+  transition: background 0.25s ease;
+}
+.switch .slider::before {
+  content: "";
+  position: absolute;
+  height: 27px;
+  width: 27px;
+  left: 2px;
+  bottom: 2px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.25s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+.switch input:checked + .slider { background: #34c759; }
+.switch input:checked + .slider::before { transform: translateX(20px); }
+
+/* ===== Renommage de dossier ===== */
+#folder-title { cursor: pointer; }
+#folder-title::after { content: " ✎"; font-size: 13px; opacity: 0.45; }
+#folder-title.renaming::after { display: none; }
+.folder-title-input {
+  width: 100%;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 10px;
+  color: #fff;
+  padding: 6px 8px;
+  font-family: inherit;
+  outline: none;
+}
