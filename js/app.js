@@ -2,7 +2,7 @@
 'use strict';
 
 const DATA_URL = 'data/apps.json';
-const LS_LAYOUT = 'hub-layout-v4';   // { order, dock, hidden }
+const LS_LAYOUT = 'hub-layout-v5';   // { order, dock, hidden } — clé neuve (purge dossiers v4)
 
 let state = {
   apps: [],
@@ -419,9 +419,17 @@ function tickClock() {
 
 /* ===== Service worker ===== */
 function registerSW() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
-  }
+  if (!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register('sw.js')
+    .then(reg => reg.update())
+    .catch(() => {});
+  // Recharge une fois quand une nouvelle version du SW prend le contrôle
+  let refreshed = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshed) return;
+    refreshed = true;
+    window.location.reload();
+  });
 }
 
 /* ===== Init ===== */
