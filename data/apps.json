@@ -14,11 +14,11 @@
       "desc": "Duel multijoueur temps réel"
     },
     {
-      "id": "grims-compagnon",
+      "id": "grims",
       "name": "Grim's",
       "emoji": "⚓",
       "color": "#0a84ff",
-      "url": "https://qentinalouviers-sys.github.io/grims-compagnon/",
+      "url": "https://qentinalouviers-sys.github.io/Grim-s/",
       "desc": "Tableau de bord pêche en mer"
     },
     {
@@ -68,14 +68,6 @@
       "color": "#e63946",
       "url": "https://qentina.fr",
       "desc": "Pizzeria à Louviers"
-    },
-    {
-      "id": "grims-legacy",
-      "name": "Grim-s",
-      "emoji": "🌊",
-      "color": "#64d2ff",
-      "url": "https://qentinalouviers-sys.github.io/Grim-s/",
-      "desc": "Version legacy du dashboard mer"
     },
     {
       "id": "stacktheboite",
