@@ -1,0 +1,5 @@
+# fichiers de dev/test — ne pas déployer
+test-e2e.js
+screenshot.js
+node_modules/
+*.log
