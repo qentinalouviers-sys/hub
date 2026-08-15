@@ -46,6 +46,22 @@
   <!-- Bouton édition -->
   <button id="edit-btn" class="edit-btn" aria-label="Réorganiser">✏️</button>
 
+  <!-- Bouton réinitialiser -->
+  <button id="reset-btn" class="reset-btn hidden" aria-label="Réinitialiser">↺</button>
+
+  <!-- Modale de confirmation suppression -->
+  <div id="confirm-overlay" class="confirm-overlay hidden">
+    <div class="confirm-card">
+      <div class="confirm-emoji">🗑️</div>
+      <div class="confirm-title">Supprimer «&nbsp;<span id="confirm-name"></span>&nbsp;»&nbsp;?</div>
+      <div class="confirm-sub">Cette application sera retirée de ton écran d'accueil.</div>
+      <div class="confirm-actions">
+        <button id="confirm-cancel" class="confirm-btn cancel">Annuler</button>
+        <button id="confirm-ok" class="confirm-btn danger">Supprimer</button>
+      </div>
+    </div>
+  </div>
+
   <script src="js/app.js"></script>
 </body>
 </html>
