@@ -182,8 +182,9 @@ html, body {
   border-radius: 30px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
-#dock .app { width: calc(var(--icon-size) * 0.94); }
-#dock .app .icon { width: calc(var(--icon-size) * 0.94); height: calc(var(--icon-size) * 0.94); font-size: 30px; }
+#dock .app { width: calc(var(--icon-size) * 0.9); gap: 3px; }
+#dock .app .icon { width: calc(var(--icon-size) * 0.9); height: calc(var(--icon-size) * 0.9); font-size: 29px; }
+#dock .app .label { font-size: 10px; max-width: calc(var(--icon-size) * 0.9 + 10px); }
 
 /* ===== Mode édition (gigue) ===== */
 body.editing .app .icon {
